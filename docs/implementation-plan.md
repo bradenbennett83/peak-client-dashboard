@@ -2,7 +2,7 @@
 
 **Version:** 1.0  
 **Created:** January 7, 2026  
-**Status:** Phases 0-5 Complete, Phase 6 In Progress
+**Status:** Phases 0-8 Complete, Phase 9 Pending
 
 ---
 
@@ -17,7 +17,7 @@
 7. [Phase 5: Case Management](#phase-5-case-management) ✅
 8. [Phase 6: Invoices & Payments](#phase-6-invoices--payments) ✅
 9. [Phase 7: Shipping Labels](#phase-7-shipping-labels) ✅
-10. [Phase 8: Notifications & Settings](#phase-8-notifications--settings) 🔄
+10. [Phase 8: Notifications & Settings](#phase-8-notifications--settings) ✅
 11. [Phase 9: QA, Hardening, Launch](#phase-9-qa-hardening-launch)
 12. [MCP Tools Reference](#mcp-tools-reference)
 13. [Appendix](#appendix)
@@ -49,7 +49,7 @@ This implementation plan details the complete build-out of the Peak Dental Studi
 | Phase 5: Cases | 2-3 days | ✅ Complete |
 | Phase 6: Invoices | 2-3 days | ✅ Complete |
 | Phase 7: Shipping | 1-2 days | ✅ Complete |
-| Phase 8: Notifications | 1-2 days | 🔄 In Progress |
+| Phase 8: Notifications | 1-2 days | ✅ Complete |
 | Phase 9: QA & Launch | 3-5 days | Pending |
 
 ---
@@ -229,17 +229,17 @@ peak-client-dashboard/
 
 ---
 
-## Phase 8: Notifications & Settings 🔄
+## Phase 8: Notifications & Settings ✅
 
-**Status:** IN PROGRESS
+**Status:** COMPLETE
 
-### Remaining Tasks
+### Completed Tasks
 
-- [ ] Build notifications page
-- [ ] Add real-time notifications with Supabase Realtime
-- [ ] Create practice profile settings page
-- [ ] Add notification preferences page
-- [ ] Create security settings page
+1. ✅ Built notifications page with list, filtering, mark-as-read, and delete functionality
+2. ✅ Added real-time notifications with Supabase Realtime subscription
+3. ✅ Created practice profile settings page (name, contact, addresses)
+4. ✅ Added notification preferences page (email/in-app toggles, digest frequency)
+5. ✅ Created security settings page with password change form
 
 ---
 
