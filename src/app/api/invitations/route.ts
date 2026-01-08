@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { randomBytes } from "crypto";
+import { sendInvitationEmail } from "@/lib/email/invitations";
 
 export async function POST(request: Request) {
   try {
@@ -120,8 +121,20 @@ export async function POST(request: Request) {
     // Generate the invitation URL
     const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL}/invite/${token}`;
 
-    // TODO: Send email with invitation link
-    // For now, return the URL for manual sharing
+    // Send invitation email
+    try {
+      await sendInvitationEmail({
+        to: email,
+        inviteUrl,
+        practiceName: practice.name,
+        inviterName: profile.name || profile.email,
+        role,
+      });
+    } catch (emailError) {
+      console.error("Failed to send invitation email:", emailError);
+      // Continue even if email fails - user can still manually share the link
+    }
+
     return NextResponse.json({
       success: true,
       invitation: {
