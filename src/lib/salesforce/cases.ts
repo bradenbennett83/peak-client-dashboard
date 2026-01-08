@@ -1,4 +1,4 @@
-import { query, retrieve, type QueryResult } from "./client";
+import { query, retrieve, create, type QueryResult } from "./client";
 
 // Salesforce Case record type
 export interface SalesforceCase {
@@ -161,5 +161,52 @@ export async function getRecentCases(
   `);
 
   return result.records.map(mapSalesforceCase);
+}
+
+/**
+ * Create a new case in Salesforce
+ */
+export interface CreateCaseInput {
+  accountId: string;
+  contactId?: string;
+  patientName: string;
+  patientDOB?: string;
+  restorationType: string;
+  material?: string;
+  shade?: string;
+  toothNumbers?: string;
+  dueDate?: string;
+  isRush?: boolean;
+  specialInstructions?: string;
+}
+
+export async function createCase(input: CreateCaseInput): Promise<{ id: string; caseNumber: string }> {
+  const caseData = {
+    AccountId: input.accountId,
+    ContactId: input.contactId,
+    Patient_Name__c: input.patientName,
+    Patient_DOB__c: input.patientDOB,
+    Subject: `${input.restorationType} for ${input.patientName}`,
+    Restoration_Type__c: input.restorationType,
+    Material__c: input.material,
+    Shade__c: input.shade,
+    Tooth_Numbers__c: input.toothNumbers,
+    Due_Date__c: input.dueDate,
+    Is_Rush__c: input.isRush || false,
+    Priority: input.isRush ? "High" : "Normal",
+    Special_Instructions__c: input.specialInstructions,
+    Description: input.specialInstructions,
+    Status: "New",
+  };
+
+  const result = await create("Case", caseData);
+  
+  // Get the case number from the created record
+  const createdCase = await getCaseById(result.id);
+  
+  return {
+    id: result.id,
+    caseNumber: createdCase.caseNumber,
+  };
 }
 

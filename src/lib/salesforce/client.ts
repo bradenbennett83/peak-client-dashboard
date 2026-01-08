@@ -116,3 +116,14 @@ export async function update(
   return await conn.sobject(objectType).update(record);
 }
 
+/**
+ * Create a new record
+ */
+export async function create(
+  objectType: string,
+  record: object
+): Promise<RecordResult> {
+  const conn = await getSalesforceConnection();
+  return await conn.sobject(objectType).create(record);
+}
+
