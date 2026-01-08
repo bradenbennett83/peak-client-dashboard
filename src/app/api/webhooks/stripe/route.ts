@@ -7,26 +7,75 @@ import {
 } from "@/lib/stripe/webhooks";
 import { createClient } from "@/lib/supabase/server";
 
+/**
+ * Stripe Webhook Handler
+ * - Verifies webhook signature
+ * - Implements idempotency to prevent duplicate processing
+ * - Handles payment success and failure events
+ */
 export async function POST(request: Request) {
   const body = await request.text();
   const headersList = await headers();
   const signature = headersList.get("stripe-signature");
 
   if (!signature) {
+    console.error("[Stripe Webhook] Missing signature header");
     return NextResponse.json(
       { error: "Missing stripe-signature header" },
       { status: 400 }
     );
   }
 
+  let event;
   try {
-    const event = constructWebhookEvent(body, signature);
-    const supabase = await createClient();
+    event = constructWebhookEvent(body, signature);
+  } catch (error) {
+    console.error("[Stripe Webhook] Signature verification failed:", error);
+    return NextResponse.json(
+      { error: "Invalid signature" },
+      { status: 401 }
+    );
+  }
 
+  const supabase = await createClient();
+
+  // Idempotency check: prevent duplicate event processing
+  const eventId = event.id;
+  const { data: existingEvent } = await supabase
+    .from("webhook_events")
+    .select("id")
+    .eq("event_id", eventId)
+    .single();
+
+  if (existingEvent) {
+    console.log(`[Stripe Webhook] Event ${eventId} already processed, skipping`);
+    return NextResponse.json({ received: true, duplicate: true });
+  }
+
+  // Record the event for idempotency
+  await supabase.from("webhook_events").insert({
+    event_id: eventId,
+    event_type: event.type,
+    processed_at: new Date().toISOString(),
+  });
+
+  try {
     switch (event.type) {
       case "payment_intent.succeeded": {
         const data = extractPaymentSucceeded(event);
         if (data && data.invoiceId) {
+          // Check if payment already exists (additional idempotency)
+          const { data: existingPayment } = await supabase
+            .from("payments")
+            .select("id")
+            .eq("stripe_payment_id", data.paymentIntentId)
+            .single();
+
+          if (existingPayment) {
+            console.log(`[Stripe Webhook] Payment ${data.paymentIntentId} already recorded`);
+            break;
+          }
+
           // Record the payment
           await supabase.from("payments").insert({
             invoice_id: data.invoiceId,
@@ -117,16 +166,39 @@ export async function POST(request: Request) {
       }
 
       default:
-        // Unhandled event type
-        console.log(`Unhandled webhook event type: ${event.type}`);
+        // Unhandled event type - log but don't fail
+        console.log(`[Stripe Webhook] Unhandled event type: ${event.type}`);
     }
 
     return NextResponse.json({ received: true });
   } catch (error) {
-    console.error("Webhook error:", error);
+    // Log error with event ID for debugging
+    console.error(`[Stripe Webhook] Processing error for event ${eventId}:`, error);
+    
+    // Mark event as failed for retry analysis
+    await supabase
+      .from("webhook_events")
+      .update({ 
+        error: error instanceof Error ? error.message : "Unknown error",
+        failed_at: new Date().toISOString(),
+      })
+      .eq("event_id", eventId);
+
+    // Return 200 to prevent Stripe retries for non-recoverable errors
+    // Return 500 only for temporary failures
+    const isTemporaryError = error instanceof Error && 
+      (error.message.includes("timeout") || error.message.includes("connection"));
+    
+    if (isTemporaryError) {
+      return NextResponse.json(
+        { error: "Temporary failure, please retry" },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json(
-      { error: "Webhook processing failed" },
-      { status: 400 }
+      { error: "Webhook processing failed", received: true },
+      { status: 200 }
     );
   }
 }
