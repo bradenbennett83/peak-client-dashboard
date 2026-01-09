@@ -57,6 +57,20 @@ export async function POST(request: Request) {
       );
     }
 
+    // Get the practice information
+    const { data: practice, error: practiceError } = await supabase
+      .from("practices")
+      .select("id, name")
+      .eq("id", profile.practice_id)
+      .single();
+
+    if (practiceError || !practice) {
+      return NextResponse.json(
+        { error: "Practice not found" },
+        { status: 404 }
+      );
+    }
+
     // Check if email is already in use
     const { data: existingUser } = await supabase
       .from("users")

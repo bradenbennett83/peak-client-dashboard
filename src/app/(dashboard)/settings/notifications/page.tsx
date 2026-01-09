@@ -19,13 +19,13 @@ export default async function NotificationPreferencesPage() {
   // Extract notification preferences from practice settings
   const settings = (practice?.settings as Record<string, unknown>) || {};
   const notificationPrefs = {
-    emailCaseUpdates: settings.emailCaseUpdates ?? true,
-    emailInvoices: settings.emailInvoices ?? true,
-    emailShipping: settings.emailShipping ?? true,
-    inAppCaseUpdates: settings.inAppCaseUpdates ?? true,
-    inAppInvoices: settings.inAppInvoices ?? true,
-    inAppShipping: settings.inAppShipping ?? true,
-    digestFrequency: (settings.digestFrequency as string) || "immediate",
+    emailCaseUpdates: (settings.emailCaseUpdates as boolean | undefined) ?? true,
+    emailInvoices: (settings.emailInvoices as boolean | undefined) ?? true,
+    emailShipping: (settings.emailShipping as boolean | undefined) ?? true,
+    inAppCaseUpdates: (settings.inAppCaseUpdates as boolean | undefined) ?? true,
+    inAppInvoices: (settings.inAppInvoices as boolean | undefined) ?? true,
+    inAppShipping: (settings.inAppShipping as boolean | undefined) ?? true,
+    digestFrequency: (settings.digestFrequency as string | undefined) || "immediate",
   };
 
   return (

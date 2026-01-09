@@ -56,10 +56,8 @@ const formSchema = z.object({
   shade: z.string().optional(),
   
   // Step 3: Timeline & Instructions
-  dueDate: z.date({
-    required_error: "Please select a due date",
-  }),
-  isRush: z.boolean().default(false),
+  dueDate: z.date(),
+  isRush: z.boolean(),
   specialInstructions: z.string().optional(),
 });
 
