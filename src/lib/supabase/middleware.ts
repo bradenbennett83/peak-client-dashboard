@@ -2,13 +2,37 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function updateSession(request: NextRequest) {
+  // Validate required environment variables
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.error(
+      "Missing required Supabase environment variables:",
+      !supabaseUrl ? "NEXT_PUBLIC_SUPABASE_URL" : "",
+      !supabaseAnonKey ? "NEXT_PUBLIC_SUPABASE_ANON_KEY" : ""
+    );
+    
+    // Return a helpful error response instead of crashing
+    return new NextResponse(
+      JSON.stringify({
+        error: "Server configuration error",
+        message: "Missing required environment variables. Please check Vercel project settings.",
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   });
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    supabaseAnonKey,
     {
       cookies: {
         getAll() {
@@ -38,7 +62,7 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   // Protect all routes except public ones
-  const publicPaths = ["/login", "/signup", "/forgot-password", "/auth"];
+  const publicPaths = ["/login", "/signup", "/forgot-password", "/auth", "/invite"];
   const isPublicPath = publicPaths.some((path) =>
     request.nextUrl.pathname.startsWith(path)
   );
