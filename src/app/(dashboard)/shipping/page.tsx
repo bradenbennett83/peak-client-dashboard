@@ -18,7 +18,7 @@ export default async function ShippingPage() {
       {/* Page Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-light tracking-tight">Shipping</h1>
+          <h1 className="text-3xl font-light tracking-tight font-serif">Shipping</h1>
           <p className="text-muted-foreground">
             Create and manage prepaid shipping labels
           </p>

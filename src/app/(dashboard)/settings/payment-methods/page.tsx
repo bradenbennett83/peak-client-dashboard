@@ -40,7 +40,7 @@ export default async function PaymentMethodsPage() {
 
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-light tracking-tight">Payment Methods</h1>
+        <h1 className="text-3xl font-light tracking-tight font-serif">Payment Methods</h1>
         <p className="text-muted-foreground">
           Manage your saved payment methods for invoice payments
         </p>

@@ -78,7 +78,7 @@ export default async function InvoiceDetailPage({ params }: Props) {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-light tracking-tight">
+          <h1 className="text-3xl font-light tracking-tight font-serif">
             Invoice {invoice.invoiceNumber}
           </h1>
           <p className="text-muted-foreground">

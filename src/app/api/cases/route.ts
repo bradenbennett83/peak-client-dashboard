@@ -57,7 +57,7 @@ export async function POST(request: Request) {
     const validationResult = createCaseSchema.safeParse(body);
 
     if (!validationResult.success) {
-      const errors = validationResult.error.errors.map((e) => e.message);
+      const errors = validationResult.error.issues.map((e) => e.message);
       return ApiErrors.validationFailed(errors);
     }
 

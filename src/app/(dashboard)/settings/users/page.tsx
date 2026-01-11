@@ -18,7 +18,7 @@ export default async function UsersSettingsPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-light tracking-tight">Team Members</h1>
+          <h1 className="text-3xl font-light tracking-tight font-serif">Team Members</h1>
           <p className="text-muted-foreground">
             Manage users and invitations for your practice
           </p>

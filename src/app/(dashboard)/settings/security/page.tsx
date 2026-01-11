@@ -20,7 +20,7 @@ export default async function SecuritySettingsPage() {
 
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-light tracking-tight">Security Settings</h1>
+        <h1 className="text-3xl font-light tracking-tight font-serif">Security Settings</h1>
         <p className="text-muted-foreground">
           Manage your password and account security
         </p>

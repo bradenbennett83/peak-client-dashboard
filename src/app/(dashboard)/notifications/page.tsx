@@ -15,7 +15,7 @@ export default async function NotificationsPage() {
       {/* Page Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-light tracking-tight">Notifications</h1>
+          <h1 className="text-3xl font-light tracking-tight font-serif">Notifications</h1>
           <p className="text-muted-foreground">
             Stay updated on your cases, invoices, and shipments
           </p>

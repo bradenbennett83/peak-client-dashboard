@@ -20,7 +20,7 @@ export default async function NewCasePage() {
 
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-light tracking-tight">Submit New Case</h1>
+        <h1 className="text-3xl font-light tracking-tight font-serif">Submit New Case</h1>
         <p className="text-muted-foreground">
           Fill out the form below to submit a new dental case
         </p>

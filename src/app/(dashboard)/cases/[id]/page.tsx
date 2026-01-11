@@ -100,7 +100,7 @@ export default async function CaseDetailPage({ params }: Props) {
             </Link>
           </Button>
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-light tracking-tight">
+            <h1 className="text-3xl font-light tracking-tight font-serif">
               {caseData.patient_name}
             </h1>
             {caseData.is_rush && (

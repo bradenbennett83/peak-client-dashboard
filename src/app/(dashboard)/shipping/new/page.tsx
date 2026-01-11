@@ -136,7 +136,7 @@ export default function NewShippingLabelPage() {
       </Button>
 
       <div>
-        <h1 className="text-3xl font-light tracking-tight">
+        <h1 className="text-3xl font-light tracking-tight font-serif">
           Create Shipping Label
         </h1>
         <p className="text-muted-foreground">

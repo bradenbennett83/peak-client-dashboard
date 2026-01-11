@@ -24,7 +24,7 @@ export default async function HelpPage() {
     <div className="space-y-6">
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-light tracking-tight">Help & Support</h1>
+        <h1 className="text-3xl font-light tracking-tight font-serif">Help & Support</h1>
         <p className="text-muted-foreground">
           Find answers to common questions and get in touch with our team
         </p>
