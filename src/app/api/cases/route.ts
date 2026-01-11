@@ -1,6 +1,24 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createCase } from "@/lib/salesforce/cases";
+import { ApiErrors } from "@/lib/api/errors";
+
+// Server-side validation schema
+const createCaseSchema = z.object({
+  patientName: z.string().min(2, "Patient name must be at least 2 characters"),
+  patientDOB: z.string().optional(),
+  restorationType: z.string().min(1, "Restoration type is required"),
+  material: z.string().optional(),
+  shade: z.string().optional(),
+  toothNumbers: z.string().min(1, "At least one tooth number is required"),
+  dueDate: z.string().refine(
+    (date) => !isNaN(Date.parse(date)),
+    "Invalid due date format"
+  ),
+  isRush: z.boolean().optional().default(false),
+  specialInstructions: z.string().optional(),
+});
 
 export async function POST(request: Request) {
   try {
@@ -10,21 +28,18 @@ export async function POST(request: Request) {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return ApiErrors.unauthorized();
     }
 
     // Get user's profile and practice
     const { data: profile } = await supabase
       .from("users")
-      .select("practice_id")
-      .eq("id", user.id)
+      .select("id, practice_id")
+      .eq("auth_user_id", user.id)
       .single();
 
     if (!profile?.practice_id) {
-      return NextResponse.json(
-        { error: "User profile not found" },
-        { status: 404 }
-      );
+      return ApiErrors.notFound("User profile");
     }
 
     const { data: practice } = await supabase
@@ -34,14 +49,18 @@ export async function POST(request: Request) {
       .single();
 
     if (!practice?.salesforce_account_id) {
-      return NextResponse.json(
-        { error: "Practice not linked to Salesforce" },
-        { status: 400 }
-      );
+      return ApiErrors.badRequest("Practice not linked to Salesforce");
     }
 
-    // Parse request body
+    // Parse and validate request body
     const body = await request.json();
+    const validationResult = createCaseSchema.safeParse(body);
+
+    if (!validationResult.success) {
+      const errors = validationResult.error.errors.map((e) => e.message);
+      return ApiErrors.validationFailed(errors);
+    }
+
     const {
       patientName,
       patientDOB,
@@ -52,15 +71,7 @@ export async function POST(request: Request) {
       dueDate,
       isRush,
       specialInstructions,
-    } = body;
-
-    // Validation
-    if (!patientName || !restorationType) {
-      return NextResponse.json(
-        { error: "Patient name and restoration type are required" },
-        { status: 400 }
-      );
-    }
+    } = validationResult.data;
 
     // Create case in Salesforce
     const result = await createCase({
@@ -77,8 +88,8 @@ export async function POST(request: Request) {
     });
 
     // Log the action
-    await supabase.from("audit_logs").insert({
-      user_id: user.id,
+    const { error: auditError } = await supabase.from("audit_logs").insert({
+      user_id: profile.id,
       practice_id: profile.practice_id,
       action: "case.created",
       resource_type: "case",
@@ -90,6 +101,10 @@ export async function POST(request: Request) {
       },
     });
 
+    if (auditError) {
+      console.error("Failed to log audit event:", auditError);
+    }
+
     return NextResponse.json({
       success: true,
       case: {
@@ -99,10 +114,7 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("Error creating case:", error);
-    return NextResponse.json(
-      { error: "Failed to create case" },
-      { status: 500 }
-    );
+    return ApiErrors.serverError("Failed to create case");
   }
 }
 

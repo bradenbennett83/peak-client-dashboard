@@ -2,23 +2,18 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { randomBytes } from "crypto";
 import { sendInvitationEmail } from "@/lib/email/invitations";
+import { ApiErrors } from "@/lib/api/errors";
 
 export async function POST(request: Request) {
   try {
     const { email, role } = await request.json();
 
     if (!email || !role) {
-      return NextResponse.json(
-        { error: "Email and role are required" },
-        { status: 400 }
-      );
+      return ApiErrors.badRequest("Email and role are required");
     }
 
     if (!["admin", "staff"].includes(role)) {
-      return NextResponse.json(
-        { error: "Invalid role. Must be 'admin' or 'staff'" },
-        { status: 400 }
-      );
+      return ApiErrors.badRequest("Invalid role. Must be 'admin' or 'staff'");
     }
 
     const supabase = await createClient();
@@ -30,10 +25,7 @@ export async function POST(request: Request) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json(
-        { error: "Not authenticated" },
-        { status: 401 }
-      );
+      return ApiErrors.unauthorized();
     }
 
     // Get the user's profile to verify admin role
@@ -44,17 +36,11 @@ export async function POST(request: Request) {
       .single();
 
     if (profileError || !profile) {
-      return NextResponse.json(
-        { error: "User profile not found" },
-        { status: 404 }
-      );
+      return ApiErrors.notFound("User profile");
     }
 
     if (profile.role !== "admin") {
-      return NextResponse.json(
-        { error: "Only admins can invite users" },
-        { status: 403 }
-      );
+      return ApiErrors.forbidden("Only admins can invite users");
     }
 
     // Get the practice information
@@ -65,10 +51,7 @@ export async function POST(request: Request) {
       .single();
 
     if (practiceError || !practice) {
-      return NextResponse.json(
-        { error: "Practice not found" },
-        { status: 404 }
-      );
+      return ApiErrors.notFound("Practice");
     }
 
     // Check if email is already in use
@@ -80,10 +63,7 @@ export async function POST(request: Request) {
       .single();
 
     if (existingUser) {
-      return NextResponse.json(
-        { error: "A user with this email already exists in your practice" },
-        { status: 400 }
-      );
+      return ApiErrors.badRequest("A user with this email already exists in your practice");
     }
 
     // Check for existing pending invitation
@@ -97,10 +77,7 @@ export async function POST(request: Request) {
       .single();
 
     if (existingInvite) {
-      return NextResponse.json(
-        { error: "A pending invitation already exists for this email" },
-        { status: 400 }
-      );
+      return ApiErrors.badRequest("A pending invitation already exists for this email");
     }
 
     // Generate a unique token
@@ -126,14 +103,16 @@ export async function POST(request: Request) {
 
     if (inviteError) {
       console.error("Failed to create invitation:", inviteError);
-      return NextResponse.json(
-        { error: "Failed to create invitation" },
-        { status: 500 }
-      );
+      return ApiErrors.serverError("Failed to create invitation");
     }
 
     // Generate the invitation URL
-    const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL}/invite/${token}`;
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+    if (!appUrl) {
+      console.error("NEXT_PUBLIC_APP_URL not configured");
+      return ApiErrors.configError("Application URL not configured");
+    }
+    const inviteUrl = `${appUrl}/invite/${token}`;
 
     // Send invitation email
     try {
@@ -161,10 +140,7 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("Error creating invitation:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return ApiErrors.serverError();
   }
 }
 
@@ -179,10 +155,7 @@ export async function GET() {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json(
-        { error: "Not authenticated" },
-        { status: 401 }
-      );
+      return ApiErrors.unauthorized();
     }
 
     // Get the user's profile
@@ -193,10 +166,7 @@ export async function GET() {
       .single();
 
     if (profileError || !profile) {
-      return NextResponse.json(
-        { error: "User profile not found" },
-        { status: 404 }
-      );
+      return ApiErrors.notFound("User profile");
     }
 
     // Get pending invitations for the practice
@@ -219,19 +189,13 @@ export async function GET() {
 
     if (inviteError) {
       console.error("Failed to fetch invitations:", inviteError);
-      return NextResponse.json(
-        { error: "Failed to fetch invitations" },
-        { status: 500 }
-      );
+      return ApiErrors.serverError("Failed to fetch invitations");
     }
 
     return NextResponse.json({ invitations });
   } catch (error) {
     console.error("Error fetching invitations:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return ApiErrors.serverError();
   }
 }
 
@@ -241,10 +205,7 @@ export async function DELETE(request: Request) {
     const invitationId = searchParams.get("id");
 
     if (!invitationId) {
-      return NextResponse.json(
-        { error: "Invitation ID is required" },
-        { status: 400 }
-      );
+      return ApiErrors.badRequest("Invitation ID is required");
     }
 
     const supabase = await createClient();
@@ -256,10 +217,7 @@ export async function DELETE(request: Request) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json(
-        { error: "Not authenticated" },
-        { status: 401 }
-      );
+      return ApiErrors.unauthorized();
     }
 
     // Get the user's profile
@@ -270,17 +228,11 @@ export async function DELETE(request: Request) {
       .single();
 
     if (profileError || !profile) {
-      return NextResponse.json(
-        { error: "User profile not found" },
-        { status: 404 }
-      );
+      return ApiErrors.notFound("User profile");
     }
 
     if (profile.role !== "admin") {
-      return NextResponse.json(
-        { error: "Only admins can delete invitations" },
-        { status: 403 }
-      );
+      return ApiErrors.forbidden("Only admins can delete invitations");
     }
 
     // Delete the invitation (only if it belongs to the user's practice)
@@ -292,19 +244,13 @@ export async function DELETE(request: Request) {
 
     if (deleteError) {
       console.error("Failed to delete invitation:", deleteError);
-      return NextResponse.json(
-        { error: "Failed to delete invitation" },
-        { status: 500 }
-      );
+      return ApiErrors.serverError("Failed to delete invitation");
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting invitation:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return ApiErrors.serverError();
   }
 }
 
