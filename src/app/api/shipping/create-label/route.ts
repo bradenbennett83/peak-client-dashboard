@@ -4,6 +4,7 @@ import {
   createInboundShippingLabel,
   type UPSAddress,
 } from "@/lib/ups/client";
+import { ApiErrors } from "@/lib/api/errors";
 
 export async function POST(request: Request) {
   try {
@@ -18,7 +19,7 @@ export async function POST(request: Request) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+      return ApiErrors.unauthorized();
     }
 
     // Get user's profile and practice
@@ -29,10 +30,7 @@ export async function POST(request: Request) {
       .single();
 
     if (!profile || !profile.practice) {
-      return NextResponse.json(
-        { error: "User profile not found" },
-        { status: 404 }
-      );
+      return ApiErrors.notFound("User profile");
     }
 
     // Parse shipping address from practice
@@ -41,10 +39,15 @@ export async function POST(request: Request) {
 
     if (practice.shipping_address) {
       // Assume shipping_address is stored as JSON string or already parsed
-      const addr =
-        typeof practice.shipping_address === "string"
-          ? JSON.parse(practice.shipping_address)
-          : practice.shipping_address;
+      let addr;
+      try {
+        addr =
+          typeof practice.shipping_address === "string"
+            ? JSON.parse(practice.shipping_address)
+            : practice.shipping_address;
+      } catch {
+        return ApiErrors.badRequest("Invalid shipping address format in practice settings");
+      }
 
       shippingAddress = {
         name: practice.name,
@@ -57,10 +60,7 @@ export async function POST(request: Request) {
         phone: practice.phone || undefined,
       };
     } else {
-      return NextResponse.json(
-        { error: "Practice shipping address not configured" },
-        { status: 400 }
-      );
+      return ApiErrors.badRequest("Practice shipping address not configured");
     }
 
     // Create the shipping label
@@ -97,10 +97,7 @@ export async function POST(request: Request) {
 
     if (insertError) {
       console.error("Failed to save shipping label:", insertError);
-      return NextResponse.json(
-        { error: "Failed to save shipping label" },
-        { status: 500 }
-      );
+      return ApiErrors.serverError("Failed to save shipping label");
     }
 
     // Create notification
@@ -138,14 +135,8 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("Error creating shipping label:", error);
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Failed to create shipping label",
-      },
-      { status: 500 }
+    return ApiErrors.serverError(
+      error instanceof Error ? error.message : "Failed to create shipping label"
     );
   }
 }

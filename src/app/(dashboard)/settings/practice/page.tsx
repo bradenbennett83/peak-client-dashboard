@@ -28,7 +28,7 @@ export default async function PracticeProfilePage() {
 
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-light tracking-tight">Practice Profile</h1>
+        <h1 className="text-3xl font-light tracking-tight font-serif">Practice Profile</h1>
         <p className="text-muted-foreground">
           Update your practice information and contact details
         </p>

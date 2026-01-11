@@ -17,7 +17,7 @@ export default async function CasesPage() {
       {/* Page Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-light tracking-tight">Cases</h1>
+          <h1 className="text-3xl font-light tracking-tight font-serif">Cases</h1>
           <p className="text-muted-foreground">
             View and manage your dental lab cases
           </p>

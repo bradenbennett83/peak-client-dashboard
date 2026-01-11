@@ -20,7 +20,7 @@ export default function DashboardPage() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-light tracking-tight">Dashboard</h1>
+          <h1 className="text-3xl font-light tracking-tight font-serif">Dashboard</h1>
           <p className="text-muted-foreground">
             Welcome back! Here&apos;s an overview of your practice.
           </p>
@@ -38,40 +38,48 @@ export default function DashboardPage() {
       {/* Summary Stats */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Suspense fallback={<StatCardSkeleton />}>
-          <StatCard
-            title="Cases in Progress"
-            value="12"
-            description="+2 from last week"
-            icon={FileText}
-            trend="up"
-          />
+          <div className="animate-slide-up delay-1">
+            <StatCard
+              title="Cases in Progress"
+              value="12"
+              description="+2 from last week"
+              icon={FileText}
+              trend="up"
+            />
+          </div>
         </Suspense>
         <Suspense fallback={<StatCardSkeleton />}>
-          <StatCard
-            title="Pending Invoices"
-            value="$2,450"
-            description="3 invoices pending"
-            icon={Receipt}
-            trend="neutral"
-          />
+          <div className="animate-slide-up delay-2">
+            <StatCard
+              title="Pending Invoices"
+              value="$2,450"
+              description="3 invoices pending"
+              icon={Receipt}
+              trend="neutral"
+            />
+          </div>
         </Suspense>
         <Suspense fallback={<StatCardSkeleton />}>
-          <StatCard
-            title="Recent Shipments"
-            value="8"
-            description="Last 30 days"
-            icon={Truck}
-            trend="up"
-          />
+          <div className="animate-slide-up delay-3">
+            <StatCard
+              title="Recent Shipments"
+              value="8"
+              description="Last 30 days"
+              icon={Truck}
+              trend="up"
+            />
+          </div>
         </Suspense>
         <Suspense fallback={<StatCardSkeleton />}>
-          <StatCard
-            title="Avg. Turnaround"
-            value="5 days"
-            description="Standard cases"
-            icon={FileText}
-            trend="down"
-          />
+          <div className="animate-slide-up delay-4">
+            <StatCard
+              title="Avg. Turnaround"
+              value="5 days"
+              description="Standard cases"
+              icon={FileText}
+              trend="down"
+            />
+          </div>
         </Suspense>
       </div>
 
@@ -273,6 +281,8 @@ function CaseRow({
     Delivered: "bg-gray-100 text-gray-800",
   };
 
+  const isInProduction = status === "In Production";
+
   return (
     <Link
       href={`/cases/${caseNumber}`}
@@ -280,10 +290,10 @@ function CaseRow({
     >
       <div className="space-y-1">
         <div className="flex items-center gap-2">
-          <span className="font-medium text-sm">{caseNumber}</span>
+          <span className="font-medium text-sm font-mono-data">{caseNumber}</span>
           <Badge
             variant="secondary"
-            className={statusColors[status] || "bg-gray-100"}
+            className={`${statusColors[status] || "bg-gray-100"} ${isInProduction ? "status-pulse" : ""}`}
           >
             {status}
           </Badge>
@@ -314,11 +324,11 @@ function InvoiceRow({
   return (
     <div className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors">
       <div>
-        <p className="font-medium text-sm">{invoiceNumber}</p>
+        <p className="font-medium text-sm font-mono-data">{invoiceNumber}</p>
         <p className="text-xs text-muted-foreground">Due {dueDate}</p>
       </div>
       <div className="text-right">
-        <p className="font-medium">{amount}</p>
+        <p className="font-medium font-mono-data">{amount}</p>
         <Badge
           variant={status === "overdue" ? "destructive" : "secondary"}
           className="text-xs"

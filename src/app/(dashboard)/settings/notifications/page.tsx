@@ -40,7 +40,7 @@ export default async function NotificationPreferencesPage() {
 
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-light tracking-tight">
+        <h1 className="text-3xl font-light tracking-tight font-serif">
           Notification Preferences
         </h1>
         <p className="text-muted-foreground">

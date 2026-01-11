@@ -16,7 +16,7 @@ export default async function InvoicesPage() {
     <div className="space-y-6">
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-light tracking-tight">Invoices</h1>
+        <h1 className="text-3xl font-light tracking-tight font-serif">Invoices</h1>
         <p className="text-muted-foreground">
           View and pay your invoices
         </p>

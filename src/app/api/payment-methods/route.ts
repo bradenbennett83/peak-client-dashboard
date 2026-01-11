@@ -6,6 +6,7 @@ import {
   setDefaultPaymentMethod,
   getOrCreateCustomer,
 } from "@/lib/stripe/client";
+import { ApiErrors } from "@/lib/api/errors";
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,11 +16,22 @@ export async function POST(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return ApiErrors.unauthorized();
     }
 
     const body = await request.json();
     const { action, paymentMethodId, practiceId, practiceName, email } = body;
+
+    // Verify user belongs to the requested practice
+    const { data: userProfile } = await supabase
+      .from("users")
+      .select("practice_id")
+      .eq("auth_user_id", user.id)
+      .single();
+
+    if (!userProfile || userProfile.practice_id !== practiceId) {
+      return ApiErrors.forbidden("You do not have access to this practice");
+    }
 
     // Get or create Stripe customer
     const { data: practice } = await supabase
@@ -29,7 +41,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (!practice) {
-      return NextResponse.json({ error: "Practice not found" }, { status: 404 });
+      return ApiErrors.notFound("Practice");
     }
 
     let customerId = practice.stripe_customer_id;
@@ -67,13 +79,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
-    return NextResponse.json({ error: "Invalid action" }, { status: 400 });
+    return ApiErrors.badRequest("Invalid action");
   } catch (error) {
     console.error("Payment method API error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return ApiErrors.serverError();
   }
 }
 

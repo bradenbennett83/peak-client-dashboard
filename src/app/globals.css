@@ -6,8 +6,9 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-body);
+  --font-serif: var(--font-heading);
+  --font-mono: var(--font-mono);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -125,4 +126,135 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* =====================================================
+   FRONTEND DESIGN OVERHAUL - Peak Dental Studio
+   Typography, Motion, and Atmospheric Depth
+   ===================================================== */
+
+/* Slide Up Animation - for page load effects */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Pulse Animation - for active status indicators */
+@keyframes pulseDot {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+/* Subtle Float Animation - for premium feel */
+@keyframes subtleFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+/* Animation Utilities */
+.animate-slide-up {
+  animation: slideUp 0.4s ease-out forwards;
+  opacity: 0;
+}
+
+.delay-1 { animation-delay: 50ms; }
+.delay-2 { animation-delay: 100ms; }
+.delay-3 { animation-delay: 150ms; }
+.delay-4 { animation-delay: 200ms; }
+.delay-5 { animation-delay: 250ms; }
+
+/* Card Interactive Hover Effect */
+.card-interactive {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.dark .card-interactive:hover {
+  box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.3);
+}
+
+/* Status Pulse for Active Items */
+.status-pulse {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.status-pulse::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: currentColor;
+  border-radius: 50%;
+  margin-right: 6px;
+  animation: pulseDot 2s ease-in-out infinite;
+}
+
+/* Precision Grid Pattern - for sidebar background */
+.bg-precision-grid {
+  position: relative;
+}
+
+.bg-precision-grid::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 24px 24px;
+  pointer-events: none;
+}
+
+/* Subtle Gradient Background - for main content area */
+.bg-gradient-subtle {
+  background: radial-gradient(ellipse at top, oklch(0.97 0.01 25 / 0.3), transparent 70%);
+}
+
+.dark .bg-gradient-subtle {
+  background: radial-gradient(ellipse at top, oklch(0.2 0.02 25 / 0.2), transparent 70%);
+}
+
+/* Noise Texture Overlay - for premium depth */
+.bg-noise {
+  position: relative;
+}
+
+.bg-noise::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.015'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Typography Utility - Serif Headings */
+.font-heading {
+  font-family: var(--font-heading), serif;
+}
+
+/* Monospace for Case IDs and Invoice Numbers */
+.font-mono-data {
+  font-family: var(--font-mono), monospace;
+  letter-spacing: -0.02em;
 }
